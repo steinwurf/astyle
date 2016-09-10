@@ -279,7 +279,6 @@ protected:  // functions definitions are at the end of ASResource.cpp
 	bool isCharPotentialOperator(char ch) const;
 	bool isDigitSeparator(const string& line, int i) const;
 	char peekNextChar(const string& line, int i) const;
-
 };  // Class ASBase
 
 //-----------------------------------------------------------------------------
@@ -517,6 +516,7 @@ private:  // variables
 	char currentNonSpaceCh;
 	char currentNonLegalCh;
 	char prevNonLegalCh;
+    char lineFirstChar;
 };  // Class ASBeautifier
 
 //-----------------------------------------------------------------------------
@@ -591,7 +591,6 @@ private:
 	// SQL variables
 	bool nextLineIsDeclareIndent;           // begin declare section indent is reached
 	bool isInDeclareSection;                // need to indent a declare section
-
 };  // Class ASEnhancer
 
 //-----------------------------------------------------------------------------
@@ -987,7 +986,6 @@ private:  // inline functions
 // sort comparison functions for ASResource
 bool sortOnLength(const string* a, const string* b);
 bool sortOnName(const string* a, const string* b);
-
 }   // end of astyle namespace
 
 // end of astyle namespace  --------------------------------------------------

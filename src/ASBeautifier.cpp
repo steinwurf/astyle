@@ -252,6 +252,7 @@ ASBeautifier::ASBeautifier(const ASBeautifier& other) : ASBase(other)
 	currentNonSpaceCh = other.currentNonSpaceCh;
 	currentNonLegalCh = other.currentNonLegalCh;
 	prevNonLegalCh = other.prevNonLegalCh;
+    lineFirstChar = other.lineFirstChar;
 }
 
 /**
@@ -365,6 +366,7 @@ void ASBeautifier::init(ASSourceIterator* iter)
 	prevNonLegalCh = '{';
 	currentNonLegalCh = '{';
 	quoteChar = ' ';
+    lineFirstChar = ' ';
 	probationHeader = NULL;
 	lastLineHeader = NULL;
 	backslashEndsPrevLine = false;
@@ -879,6 +881,7 @@ string ASBeautifier::beautify(const string& originalLine)
 	haveLineContinuationChar = false;
 	lineOpeningBlocksNum = 0;
 	lineClosingBlocksNum = 0;
+    lineFirstChar = ' ';
 	if (isImmediatelyPostObjCMethodDefinition)
 		clearObjCMethodDefinitionAlignment();
 
@@ -920,6 +923,7 @@ string ASBeautifier::beautify(const string& originalLine)
 		line = trim(originalLine);
 		if (line.length() > 0)
 		{
+            lineFirstChar = line[0];
 			if (line[0] == '{')
 				lineBeginsWithOpenBracket = true;
 			else if (line[0] == '}')
@@ -2109,6 +2113,21 @@ void ASBeautifier::computePreliminaryIndentation()
 				++indentCount;
 		}
 	}
+
+    if (isInTemplate)
+    {
+        // Use symmetrical layout for closing brace in template argument list:
+        //
+        // template
+        // <
+        //     class Argument
+        // >
+        if (lineFirstChar == '>' && !lineStartsInComment)
+         {
+             if (!inStatementIndentStack->empty())
+                 spaceIndentCount -= inStatementIndentStack->back();
+         }
+    }
 
 	if (isInClassInitializer || isInEnumTypeID)
 	{
