@@ -2796,7 +2796,7 @@ void ASOptions::parseOption(const string& arg, const string& errorInfo)
 		string maxIndentParam = getParam(arg, "M", "max-instatement-indent=");
 		if (maxIndentParam.length() > 0)
 			maxIndent = atoi(maxIndentParam.c_str());
-		if (maxIndent < 40)
+		if (maxIndent < 2 * formatter.getIndentLength())
 			isOptionError(arg, errorInfo);
 		else if (maxIndent > 120)
 			isOptionError(arg, errorInfo);
@@ -3552,7 +3552,6 @@ size_t Utf8_16::utf16ToUtf8(char* utf16In, size_t inLen, bool isBigEndian,
 }
 
 //----------------------------------------------------------------------------
-
 }   // end of astyle namespace
 
 //----------------------------------------------------------------------------
