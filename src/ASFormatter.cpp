@@ -1406,7 +1406,6 @@ string ASFormatter::nextLine()
 			}
 
 			continue;
-
 		}   // (isPotentialHeader &&  !isInTemplate)
 
 		// determine if this is an Objective-C statement
@@ -1592,7 +1591,6 @@ string ASFormatter::nextLine()
 		}
 
 		appendCurrentChar();
-
 	}   // end of while loop  *  end of while loop  *  end of while loop  *  end of while loop
 
 	// return a beautified (i.e. correctly indented) line.
@@ -2805,6 +2803,9 @@ bool ASFormatter::isPointerOrReference() const
 	{
 		if (previousNonWSChar == '>')
 			return true;
+        // This is a logical expression in a pre-definition header
+        if (foundPreDefinitionHeader)
+            return false;
 		string followingText = peekNextText(currentLine.substr(charNum + 2));
 		if (followingText.length() > 0 && followingText[0] == ')')
 			return true;
@@ -7272,5 +7273,4 @@ void ASFormatter::stripCommentPrefix()
 		}
 	}
 }
-
 }   // end namespace astyle
