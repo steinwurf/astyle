@@ -2097,21 +2097,13 @@ void ASBeautifier::computePreliminaryIndentation()
 			++indentCount;
 			isInSwitch = true;
 		}
-
 	}	// end of for loop
 
 	if (isInClassHeader)
 	{
 		if (!isJavaStyle())
 			isInClassHeaderTab = true;
-		if (lineOpensWithLineComment || lineStartsInComment || lineOpensWithComment)
-		{
-			if (!lineBeginsWithOpenBracket)
-				--indentCount;
-			if (!inStatementIndentStack->empty())
-				spaceIndentCount -= inStatementIndentStack->back();
-		}
-		else if (blockIndent)
+		if (blockIndent)
 		{
 			if (!lineBeginsWithOpenBracket)
 				++indentCount;
@@ -2979,7 +2971,6 @@ void ASBeautifier::parseCurrentLine(const string& line)
 
 			if (isSharpStyle() && findKeyword(line, i, AS_LET))
 				isInLet = true;
-
 		}   // isPotentialHeader
 
 		if (ch == '?')
@@ -3103,7 +3094,8 @@ void ASBeautifier::parseCurrentLine(const string& line)
 					// do nothing for now
 				}
 				// register indent at second word on the line
-				else if (!isInTemplate && !isInClassHeaderTab && !isInClassInitializer)
+				else if (!isInTemplate && !isInClassHeaderTab && !isInClassInitializer
+                             && !isInClassHeader)
 				{
 					int prevWord = getInStatementIndentComma(line, i);
 					int inStatementIndent = prevWord + spaceIndentCount + tabIncrementIn;
@@ -3479,5 +3471,4 @@ void ASBeautifier::parseCurrentLine(const string& line)
 		}
 	}	// end of for loop * end of for loop * end of for loop * end of for loop * end of for loop *
 }
-
 }   // end namespace astyle
