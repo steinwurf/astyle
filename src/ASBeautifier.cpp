@@ -180,6 +180,7 @@ ASBeautifier::ASBeautifier(const ASBeautifier& other) : ASBase(other)
 	isInStatement = other.isInStatement;
 	isInHeader = other.isInHeader;
 	isInTemplate = other.isInTemplate;
+    isInTemplateInstantiation = other.isInTemplateInstantiation;
 	isInDefine = other.isInDefine;
 	isInDefineDefinition = other.isInDefineDefinition;
 	classIndent = other.classIndent;
@@ -345,6 +346,7 @@ void ASBeautifier::init(ASSourceIterator* iter)
 	isInLet = false;
 	isInHeader = false;
 	isInTemplate = false;
+    isInTemplateInstantiation = false;
 	isInConditional = false;
 
 	indentCount = 0;
@@ -2114,7 +2116,7 @@ void ASBeautifier::computePreliminaryIndentation()
 		}
 	}
 
-    if (isInTemplate)
+    if (isInTemplate || isInTemplateInstantiation)
     {
         // Use symmetrical layout for closing brace in template argument list:
         //
@@ -2123,10 +2125,10 @@ void ASBeautifier::computePreliminaryIndentation()
         //     class Argument
         // >
         if (lineFirstChar == '>' && !lineStartsInComment)
-         {
+        {
              if (!inStatementIndentStack->empty())
                  spaceIndentCount -= inStatementIndentStack->back();
-         }
+        }
     }
 
 	if (isInClassInitializer || isInEnumTypeID)
@@ -2576,27 +2578,67 @@ void ASBeautifier::parseCurrentLine(const string& line)
 		else
 			currentHeader = NULL;
 
-		if (isCStyle() && isInTemplate
+		if (isCStyle()
 		        && (ch == '<' || ch == '>')
 		        && !(line.length() > i + 1 && line.compare(i, 2, ">=") == 0))
 		{
-			if (ch == '<')
-			{
-				++templateDepth;
-				inStatementIndentStackSizeStack->push_back(inStatementIndentStack->size());
-				registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, true);
-			}
-			else if (ch == '>')
-			{
-				popLastInStatementIndent();
-				if (--templateDepth <= 0)
-				{
-					ch = ';';
-					isInTemplate = false;
-					templateDepth = 0;
-				}
-			}
-		}
+            if (isInTemplate)
+            {
+                if (ch == '<')
+                {
+                    ++templateDepth;
+                    inStatementIndentStackSizeStack->push_back(inStatementIndentStack->size());
+                    registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, true);
+                }
+                else if (ch == '>')
+                {
+                    popLastInStatementIndent();
+                    if (--templateDepth <= 0)
+                    {
+                        ch = ';';
+                        isInTemplate = false;
+                        templateDepth = 0;
+                    }
+                }
+            }
+            else if (parenDepth == 0 && !isInClassHeader)
+            {
+                // A template instantiation cannot start with <<
+                if (ch == '<'
+                        && !(line.length() > i + 1 && line.compare(i, 2, "<<") == 0))
+                {
+                    if (!isInStatement && templateDepth == 0)
+                    {
+                        isInTemplateInstantiation = true;
+                    }
+
+                    ++templateDepth;
+
+                    if (isInTemplateInstantiation)
+                    {
+                        inStatementIndentStackSizeStack->push_back(inStatementIndentStack->size());
+                        registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, true);
+                        isInStatement = true;
+                    }
+                }
+                else if (ch == '>' && templateDepth > 0)
+                {
+                    if (isInTemplateInstantiation
+                            && !inStatementIndentStackSizeStack->empty())
+                    {
+                        popLastInStatementIndent();
+                    }
+                    if (--templateDepth <= 0)
+                    {
+                        ch = ';';
+                        isInTemplateInstantiation = false;
+                        templateDepth = 0;
+                    }
+                }
+            }
+        }
+
+
 
 		// handle parentheses
 		if (ch == '(' || ch == '[' || ch == ')' || ch == ']')
@@ -3085,10 +3127,13 @@ void ASBeautifier::parseCurrentLine(const string& line)
 		}
 
 		if ((ch == ';' || (parenDepth > 0 && ch == ',')) && !inStatementIndentStackSizeStack->empty())
-			while ((int) inStatementIndentStackSizeStack->back() + (parenDepth > 0 ? 1 : 0)
+        {
+            while ((int) inStatementIndentStackSizeStack->back() + (parenDepth > 0 ? 1 : 0)
 			        < (int) inStatementIndentStack->size())
+            {
 				inStatementIndentStack->pop_back();
-
+            }
+        }
 		else if (ch == ',' && isInEnum && isNonInStatementArray && !inStatementIndentStack->empty())
 			inStatementIndentStack->pop_back();
 
@@ -3234,7 +3279,17 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			}
 
 			if (parenDepth == 0 && ch == ';')
+            {
 				isInStatement = false;
+                isInTemplateInstantiation = false;
+                templateDepth = 0;
+
+                // This is the end of a statement, so the inStatementIndentStack
+                // should be reset to its default state
+                while (inStatementIndentStackSizeStack->size() > 1)
+                    inStatementIndentStackSizeStack->pop_back();
+                inStatementIndentStack->clear();
+            }
 			if (isInObjCMethodDefinition)
 				isImmediatelyPostObjCMethodDefinition = true;
 
@@ -3411,7 +3466,8 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			if (foundNonAssignmentOp == &AS_LAMBDA)
 				foundPreCommandHeader = true;
 
-			if (isInTemplate && foundNonAssignmentOp == &AS_GR_GR)
+			if ((isInTemplate || isInTemplateInstantiation)
+                    && foundNonAssignmentOp == &AS_GR_GR)
 				foundNonAssignmentOp = NULL;
 
 			// Since findHeader's boundary checking was not used above, it is possible

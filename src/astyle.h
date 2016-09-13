@@ -444,6 +444,7 @@ private:  // variables
 	bool isInStatement;
 	bool isInHeader;
 	bool isInTemplate;
+    bool isInTemplateInstantiation;
 	bool isInDefine;
 	bool isInDefineDefinition;
 	bool classIndent;
