@@ -3576,7 +3576,7 @@ void ASFormatter::formatPointerOrReference(void)
 			peekedChar = currentLine[nextChar];
 	}
 	// check for cast
-	if (peekedChar == ')' || peekedChar == '>' || peekedChar == ',')
+	if (peekedChar == ')' || peekedChar == '>' || peekedChar == ',' || peekedChar == '.')
 	{
 		formatPointerOrReferenceCast();
 		return;
