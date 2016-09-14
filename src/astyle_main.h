@@ -232,6 +232,7 @@ private:    // variables
 	// command line options
 	bool isRecursive;                   // recursive option
 	bool isDryRun;                      // dry-run option
+    bool printChanges;                  // print-changes option
 	bool noBackup;                      // suffix=none option
 	bool preserveDate;                  // preserve-date option
 	bool isVerbose;                     // verbose option
@@ -307,6 +308,7 @@ public:     // functions
 	bool getIgnoreExcludeErrors() const;
 	bool getIgnoreExcludeErrorsDisplay() const;
 	bool getIsDryRun() const;
+    bool getPrintChanges() const;
 	bool getIsFormattedOnly() const;
 	bool getIsQuiet() const;
 	bool getIsRecursive() const;
@@ -325,6 +327,7 @@ public:     // functions
 	void setIgnoreExcludeErrors(bool state);
 	void setIgnoreExcludeErrorsAndDisplay(bool state);
 	void setIsDryRun(bool state);
+    void setPrintChanges(bool state);
 	void setIsFormattedOnly(bool state);
 	void setIsQuiet(bool state);
 	void setIsRecursive(bool state);
@@ -347,6 +350,7 @@ private:	// functions
 	ASConsole& operator=(ASConsole&);          // not to be implemented
 	void correctMixedLineEnds(ostringstream& out);
 	void formatFile(const string& fileName_);
+    void printChangedLine(const string& fileName, const string& line, int lineNumber);
 	string getCurrentDirectory(const string& fileName_) const;
 	void getFileNames(const string& directory, const string& wildcard);
 	void getFilePaths(string& filePath);

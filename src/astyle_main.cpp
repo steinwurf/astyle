@@ -540,6 +540,13 @@ void ASConsole::formatFile(const string& fileName_)
 	ASStreamIterator<stringstream> streamIterator(&in);
 	formatter.init(&streamIterator);
 
+    // remove targetDirectory from filename if required by print
+    string displayName;
+    if (hasWildcard)
+        displayName = fileName_.substr(targetDirectory.length() + 1);
+    else
+        displayName = fileName_;
+
 	// format the file
 	while (formatter.hasMoreLines())
 	{
@@ -566,15 +573,23 @@ void ASConsole::formatFile(const string& fileName_)
 			}
 		}
 
-		if (filesAreIdentical)
+		if (filesAreIdentical || printChanges)
 		{
 			if (streamIterator.checkForEmptyLine)
 			{
 				if (nextLine.find_first_not_of(" \t") != string::npos)
+                {
+                    if (printChanges)
+                        printChangedLine(displayName, nextLine, linesOut);
 					filesAreIdentical = false;
+                }
 			}
 			else if (!streamIterator.compareToInputBuffer(nextLine))
-				filesAreIdentical = false;
+            {
+                if (printChanges)
+                    printChangedLine(displayName, nextLine, linesOut);
+                filesAreIdentical = false;
+            }
 			streamIterator.checkForEmptyLine = false;
 		}
 	}
@@ -585,19 +600,14 @@ void ASConsole::formatFile(const string& fileName_)
 		filesAreIdentical = false;
 	}
 
-	// remove targetDirectory from filename if required by print
-	string displayName;
-	if (hasWildcard)
-		displayName = fileName_.substr(targetDirectory.length() + 1);
-	else
-		displayName = fileName_;
-
 	// if file has changed, write the new file
 	if (!filesAreIdentical || streamIterator.getLineEndChange(lineEndFormat))
 	{
 		if (!isDryRun)
 			writeFile(fileName_, encoding, out);
 		printMsg(_("Formatted  %s\n"), displayName);
+        if (printChanges)
+            printSeparatingLine();
 		filesFormatted++;
 	}
 	else
@@ -608,6 +618,20 @@ void ASConsole::formatFile(const string& fileName_)
 	}
 
 	assert(formatter.getChecksumDiff() == 0);
+}
+
+void ASConsole::printChangedLine(const string& fileName, const string& line, int lineNumber)
+{
+    if (printChanges && !isQuiet)
+    {
+        // Print the filename, as this is the first change for file
+        if (filesAreIdentical)
+        {
+            printSeparatingLine();
+            printf("Changes in %s\n", fileName.c_str());
+        }
+        printf("Line %5d: %s\n", lineNumber, line.c_str());
+    }
 }
 
 // build a vector of argv options
@@ -661,6 +685,10 @@ bool ASConsole::getIgnoreExcludeErrorsDisplay() const
 // for unit testing
 bool ASConsole::getIsDryRun() const
 { return isDryRun; }
+
+// for unit testing
+bool ASConsole::getPrintChanges() const
+{ return printChanges; }
 
 // for unit testing
 bool ASConsole::getIsFormattedOnly() const
@@ -799,6 +827,9 @@ void ASConsole::setIsRecursive(bool state)
 
 void ASConsole::setIsDryRun(bool state)
 { isDryRun = state; }
+
+void ASConsole::setPrintChanges(bool state)
+{ printChanges = state; }
 
 void ASConsole::setIsVerbose(bool state)
 { isVerbose = state; }
@@ -3137,6 +3168,10 @@ void ASOptions::parseOption(const string& arg, const string& errorInfo)
 	{
 		g_console->setIsDryRun(true);
 	}
+    else if (isOption(arg, "print-changes"))
+    {
+        g_console->setPrintChanges(true);
+    }
 	else if ( isOption(arg, "Z", "preserve-date") )
 	{
 		g_console->setPreserveDate(true);
@@ -3806,8 +3841,16 @@ int main(int argc, char** argv)
 	// process entries in the fileNameVector
 	g_console->processFiles();
 
+    int return_code = EXIT_SUCCESS;
+    if (g_console->getPrintChanges() && g_console->getFilesFormatted() > 0)
+    {
+        // Use the number of formatted files as a return code with the
+        // --print-changes option
+        return_code = g_console->getFilesFormatted();
+    }
+
 	delete g_console;
-	return EXIT_SUCCESS;
+	return return_code;
 }
 
 #endif	// ASTYLE_LIB
