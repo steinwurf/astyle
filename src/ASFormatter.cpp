@@ -1209,6 +1209,64 @@ string ASFormatter::nextLine()
 			}
 		}   // (isPotentialHeader && !isInTemplate)
 
+        if (currentChar == ':'
+		        && previousChar != ':'         // not part of '::'
+		        && peekNextChar() != ':')      // not part of '::'
+		{
+			if (isInCase)
+			{
+				isInCase = false;
+				if (shouldBreakOneLineStatements)
+					passedColon = true;
+			}
+			else if (isCStyle()                     // for C/C++ only
+			         && isOkToBreakBlock(bracketTypeStack->back())
+			         && shouldBreakOneLineStatements
+			         && !foundQuestionMark          // not in a ?: sequence
+			         && !foundPreDefinitionHeader   // not in a definition block (e.g. class foo : public bar
+			         && previousCommandChar != ')'  // not immediately after closing paren of a method header, e.g. ASFormatter::ASFormatter(...) : ASBeautifier(...)
+			         && !foundPreCommandHeader      // not after a 'noexcept'
+			         && !squareBracketCount         // not in objC method call
+			         && !isInObjCMethodDefinition   // not objC '-' or '+' method
+			         && !isInObjCInterface          // not objC @interface
+			         && !isInObjCSelector           // not objC @selector
+			         && !isDigit(peekNextChar())    // not a bit field
+			         && !isInEnum                   // not an enum with a base type
+			         && !isInAsm                    // not in extended assembler
+			         && !isInAsmOneLine             // not in extended assembler
+			         && !isInAsmBlock)              // not in extended assembler
+			{
+				passedColon = true;
+			}
+
+			if (isCStyle()
+			        && shouldPadMethodColon
+			        && (squareBracketCount > 0 || isInObjCMethodDefinition || isInObjCSelector)
+			        && !foundQuestionMark)			// not in a ?: sequence
+				padObjCMethodColon();
+
+			if (isInObjCInterface)
+			{
+				appendSpacePad();
+				if ((int) currentLine.length() > charNum + 1 && !isWhiteSpace(currentLine[charNum + 1]))
+					currentLine.insert(charNum + 1, " ");
+			}
+
+			if (isClassInitializer())
+            {
+				isInClassInitializer = true;
+                if (!isCharImmediatelyPostComment && !isCharImmediatelyPostLineComment)
+                {
+                    // Attach colon to the constructor header and force a
+                    // new line before the member initializer list
+                    appendSpacePad();
+                    appendCurrentChar(false);
+                    shouldBreakLineAtNextChar = true;
+                    continue;
+                }
+            }
+		}
+
 		if (isInLineBreak)          // OK to break line here
 		{
 			breakLine();
@@ -1253,53 +1311,6 @@ string ASFormatter::nextLine()
 			        || (needHeaderOpeningBracket && parenStack->back() == 0))
 				currentHeader = NULL;
 			resetEndOfStatement();
-		}
-
-		if (currentChar == ':'
-		        && previousChar != ':'         // not part of '::'
-		        && peekNextChar() != ':')      // not part of '::'
-		{
-			if (isInCase)
-			{
-				isInCase = false;
-				if (shouldBreakOneLineStatements)
-					passedColon = true;
-			}
-			else if (isCStyle()                     // for C/C++ only
-			         && isOkToBreakBlock(bracketTypeStack->back())
-			         && shouldBreakOneLineStatements
-			         && !foundQuestionMark          // not in a ?: sequence
-			         && !foundPreDefinitionHeader   // not in a definition block (e.g. class foo : public bar
-			         && previousCommandChar != ')'  // not immediately after closing paren of a method header, e.g. ASFormatter::ASFormatter(...) : ASBeautifier(...)
-			         && !foundPreCommandHeader      // not after a 'noexcept'
-			         && !squareBracketCount         // not in objC method call
-			         && !isInObjCMethodDefinition   // not objC '-' or '+' method
-			         && !isInObjCInterface          // not objC @interface
-			         && !isInObjCSelector           // not objC @selector
-			         && !isDigit(peekNextChar())    // not a bit field
-			         && !isInEnum                   // not an enum with a base type
-			         && !isInAsm                    // not in extended assembler
-			         && !isInAsmOneLine             // not in extended assembler
-			         && !isInAsmBlock)              // not in extended assembler
-			{
-				passedColon = true;
-			}
-
-			if (isCStyle()
-			        && shouldPadMethodColon
-			        && (squareBracketCount > 0 || isInObjCMethodDefinition || isInObjCSelector)
-			        && !foundQuestionMark)			// not in a ?: sequence
-				padObjCMethodColon();
-
-			if (isInObjCInterface)
-			{
-				appendSpacePad();
-				if ((int) currentLine.length() > charNum + 1 && !isWhiteSpace(currentLine[charNum + 1]))
-					currentLine.insert(charNum + 1, " ");
-			}
-
-			if (isClassInitializer())
-				isInClassInitializer = true;
 		}
 
 		if (currentChar == '?')
