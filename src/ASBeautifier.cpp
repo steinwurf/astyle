@@ -3521,7 +3521,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 				// For C++ input/output, operator<< and >> should be
 				// aligned, if we are not in a statement already and
 				// also not in the "operator<<(...)" header line
-				if (!isInOperator
+				if (!isInOperator && !isInClassHeader
 				        && inStatementIndentStack->empty()
 				        && isCStyle()
 				        && (foundNonAssignmentOp == &AS_GR_GR
