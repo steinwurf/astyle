@@ -2347,7 +2347,6 @@ void ASBeautifier::parseCurrentLine(const string& line)
 	bool isInOperator = false;
 	bool isSpecialChar = false;
 	bool haveCaseIndent = false;
-	bool haveAssignmentThisLine = false;
 	bool closingBracketReached = false;
 	bool previousLineProbation = (probationHeader != NULL);
 	char ch = ' ';
@@ -3514,23 +3513,8 @@ void ASBeautifier::parseCurrentLine(const string& line)
 
 				if (!isInOperator && !isInTemplate && (!isNonInStatementArray || isInEnum))
 				{
-					// if multiple assignments, align on the previous word
-					if (foundAssignmentOp == &AS_ASSIGN
-					        && prevNonSpaceCh != ']'		// an array
-					        && statementEndsWithComma(line, i))
-					{
-						if (!haveAssignmentThisLine)		// only one assignment indent per line
-						{
-							// register indent at previous word
-							haveAssignmentThisLine = true;
-							int prevWordIndex = getInStatementIndentAssign(line, i);
-							int inStatementIndent = prevWordIndex + spaceIndentCount + tabIncrementIn;
-							inStatementIndentStack->push_back(inStatementIndent);
-							isInStatement = true;
-						}
-					}
 					// don't indent an assignment if 'let'
-					else if (isInLet)
+                    if (isInLet)
 					{
 						isInLet = false;
 					}
