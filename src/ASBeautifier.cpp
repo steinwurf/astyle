@@ -2871,6 +2871,18 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			         && ASBeautifier::peekNextChar(line, i + (*newHeader).length() - 1) != '(')
 				newHeader = NULL;
 
+            // The "template" disambiguator for dependent names should not be
+            // recognized as an actual template header. For example:
+            //   T::template foo<X>()
+            //   s.template foo<X>();
+            //   this->template foo<X>();
+            if (newHeader == &AS_TEMPLATE
+                    && (prevNonSpaceCh == ':' || prevNonSpaceCh == '.'
+                        || prevNonSpaceCh == '-'))
+            {
+                newHeader = NULL;
+            }
+
 			if (newHeader != NULL)
 			{
 				// if we reached here, then this is a header...
