@@ -2639,7 +2639,6 @@ void ASBeautifier::parseCurrentLine(const string& line)
                     }
                     if (--templateDepth <= 0)
                     {
-                        ch = ';';
                         isInTemplateInstantiation = false;
                         templateDepth = 0;
                     }
