@@ -227,6 +227,7 @@ ASBeautifier::ASBeautifier(const ASBeautifier& other) : ASBase(other)
 	shouldAlignMethodColon = other.shouldAlignMethodColon;
 	shouldIndentPreprocDefine = other.shouldIndentPreprocDefine;
 	shouldIndentPreprocConditional = other.shouldIndentPreprocConditional;
+    potentialTemplateDisambiguator = other.potentialTemplateDisambiguator;
 	indentCount = other.indentCount;
 	spaceIndentCount = other.spaceIndentCount;
 	spaceIndentObjCMethodDefinition = other.spaceIndentObjCMethodDefinition;
@@ -348,6 +349,7 @@ void ASBeautifier::init(ASSourceIterator* iter)
 	isInTemplate = false;
     isInTemplateInstantiation = false;
 	isInConditional = false;
+    potentialTemplateDisambiguator = false;
 
 	indentCount = 0;
 	spaceIndentCount = 0;
@@ -2561,6 +2563,14 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			probationHeader = NULL;
 		}
 
+        if (potentialTemplateDisambiguator)
+        {
+            // Disable the template disambiguator flag if the next word
+            // is not "template"
+            if (ch != 't' || getNextWord(line, i - 1) != AS_TEMPLATE)
+                potentialTemplateDisambiguator = false;
+        }
+
 		prevNonSpaceCh = currentNonSpaceCh;
 		currentNonSpaceCh = ch;
 		if (!isLegalNameChar(ch) && ch != ',' && ch != ';')
@@ -2871,6 +2881,18 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			         && ASBeautifier::peekNextChar(line, i + (*newHeader).length() - 1) != '(')
 				newHeader = NULL;
 
+            // The "template" disambiguator for dependent names should not
+            // be recognized as an actual template header. For example:
+            //   T::template foo<X>()
+            //   s.template foo<X>();
+            //   this->template foo<X>();
+            if (isCStyle() && newHeader == &AS_TEMPLATE
+                    && (potentialTemplateDisambiguator || prevNonSpaceCh == '.'))
+            {
+                newHeader = NULL;
+                potentialTemplateDisambiguator = false;
+            }
+
 			if (newHeader != NULL)
 			{
 				// if we reached here, then this is a header...
@@ -3042,6 +3064,9 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			if (line.length() > i + 1 && line[i + 1] == ':') // look for ::
 			{
 				++i;
+                // The next word might be a template disambiguator like
+                // T::template foo<X>()
+                potentialTemplateDisambiguator = true;
 				continue;
 			}
 			else if (isInQuestion)
@@ -3485,6 +3510,14 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			{
 				if (foundNonAssignmentOp->length() > 1)
 					i += foundNonAssignmentOp->length() - 1;
+
+                // The "template" disambiguator for dependent names should not
+                // be recognized as an actual template header. For example:
+                //   this->template foo<X>();
+                if (isCStyle() && foundNonAssignmentOp == &AS_ARROW)
+                {
+                    potentialTemplateDisambiguator = true;
+                }
 
 				// For C++ input/output, operator<< and >> should be
 				// aligned, if we are not in a statement already and

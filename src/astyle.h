@@ -491,6 +491,7 @@ private:  // variables
 	bool foundPreCommandMacro;
 	bool shouldAlignMethodColon;
 	bool shouldIndentPreprocConditional;
+    bool potentialTemplateDisambiguator;
 	int  indentCount;
 	int  spaceIndentCount;
 	int  spaceIndentObjCMethodDefinition;
