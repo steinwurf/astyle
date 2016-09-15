@@ -548,11 +548,13 @@ void ASConsole::formatFile(const string& fileName_)
         displayName = fileName_;
 
 	// format the file
+    int currentLine = 0;
 	while (formatter.hasMoreLines())
 	{
 		nextLine = formatter.nextLine();
 		out << nextLine;
 		linesOut++;
+        currentLine++;
 		if (formatter.hasMoreLines())
 		{
 			setOutputEOL(lineEndFormat, streamIterator.getOutputEOL());
@@ -569,6 +571,7 @@ void ASConsole::formatFile(const string& fileName_)
 				nextLine = formatter.nextLine();
 				out << nextLine;
 				linesOut++;
+                currentLine++;
 				streamIterator.saveLastInputLine();
 			}
 		}
@@ -580,14 +583,14 @@ void ASConsole::formatFile(const string& fileName_)
 				if (nextLine.find_first_not_of(" \t") != string::npos)
                 {
                     if (printChanges)
-                        printChangedLine(displayName, nextLine, linesOut);
+                        printChangedLine(displayName, nextLine, currentLine);
 					filesAreIdentical = false;
                 }
 			}
 			else if (!streamIterator.compareToInputBuffer(nextLine))
             {
                 if (printChanges)
-                    printChangedLine(displayName, nextLine, linesOut);
+                    printChangedLine(displayName, nextLine, currentLine);
                 filesAreIdentical = false;
             }
 			streamIterator.checkForEmptyLine = false;
