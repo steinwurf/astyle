@@ -1261,10 +1261,12 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
                                              int tabIncrementIn, int minIndent, bool updateParenStack)
 {
 	int remainingCharNum = line.length() - i;
-	int nextNonWSChar = getNextProgramCharDistance(line, i);
+	// Get the next program char distance to determine if the remaining
+    // text is comment-only
+    int nextProgramChar = getNextProgramCharDistance(line, i);
 
 	// if indent is around the last char in the line, indent instead one indent from the previous indent
-	if (nextNonWSChar == remainingCharNum)
+	if (nextProgramChar == remainingCharNum)
 	{
 		int previousIndent = spaceTabCount_;
 		if (!inStatementIndentStack->empty())
@@ -1278,6 +1280,13 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
 			parenIndentStack->push_back(previousIndent);
 		return;
 	}
+
+    // The next line should be aligned with the next non-whitespace character.
+    // This character could be a beginning of a comment
+    int nextNonWSChar = 1;
+    size_t nextCharPos = line.find_first_not_of(" \t", i + 1);
+	if (nextCharPos != string::npos)
+		nextNonWSChar = nextCharPos - i;
 
 	if (updateParenStack)
 		parenIndentStack->push_back(i + spaceTabCount_ - horstmannIndentInStatement);
