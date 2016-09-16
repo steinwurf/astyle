@@ -583,14 +583,14 @@ void ASConsole::formatFile(const string& fileName_)
 				if (nextLine.find_first_not_of(" \t") != string::npos)
                 {
                     if (printChanges)
-                        printChangedLine(displayName, nextLine, currentLine);
+                        printChangedLine(fileName_, nextLine, currentLine);
 					filesAreIdentical = false;
                 }
 			}
 			else if (!streamIterator.compareToInputBuffer(nextLine))
             {
                 if (printChanges)
-                    printChangedLine(displayName, nextLine, currentLine);
+                    printChangedLine(fileName_, nextLine, currentLine);
                 filesAreIdentical = false;
             }
 			streamIterator.checkForEmptyLine = false;
@@ -633,7 +633,7 @@ void ASConsole::printChangedLine(const string& fileName, const string& line, int
             printSeparatingLine();
             printf("Changes in %s\n", fileName.c_str());
         }
-        printf("Line %5d: %s\n", lineNumber, line.c_str());
+        printf("%s(%5d): %s\n", fileName.c_str(), lineNumber, line.c_str());
     }
 }
 
