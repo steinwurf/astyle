@@ -2836,7 +2836,13 @@ void ASBeautifier::parseCurrentLine(const string& line)
 					if (lineBeginsWithOpenBracket || lineBeginsWithComma)
 						spaceIndentCount = 0;
 				}
-				else
+                // Do not zero the spaceIndentCount for the current line
+                // if we are within a statement. This is useful for lambda
+                // expressions in multiline statements:
+                //
+                //     std::generate(data.begin(), data.end(),
+                //                   [&]() { return randval(engine); });
+				else if (!isInStatement || lineBeginsWithOpenBracket)
 					spaceIndentCount = 0;
 			}
 
