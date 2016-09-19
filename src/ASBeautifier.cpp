@@ -3563,9 +3563,19 @@ void ASBeautifier::parseCurrentLine(const string& line)
 				{
 					// this will be true if the line begins with the operator
 					if (i < 2 && spaceIndentCount == 0)
-						spaceIndentCount += 2 * indentLength;
-					// align to the beginning column of the operator
-					registerInStatementIndent(line, i - foundNonAssignmentOp->length(), spaceIndentCount, tabIncrementIn, 0, false);
+						spaceIndentCount += indentLength;
+                    // check if the line ends with << or >>
+                    if (line.find_first_not_of(" \t", i + 1) == string::npos)
+                    {
+                        // this will only add one indentation from the left
+                        registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
+                    }
+                    else
+                    {
+					    // align to the beginning column of the operator
+					    registerInStatementIndent(line, i - foundNonAssignmentOp->length(),
+                                                  spaceIndentCount, tabIncrementIn, 0, false);
+                    }
 				}
 			}
 
