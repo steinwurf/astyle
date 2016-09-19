@@ -3422,13 +3422,6 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			if (g_preprocessorCppExternCBracket == 3)	// extern "C" is not followed by a '{'
 				g_preprocessorCppExternCBracket = 0;
 
-			// "new" operator is a pointer, not a calculation
-			if (findKeyword(line, i, AS_NEW))
-			{
-				if (isInStatement && !inStatementIndentStack->empty() && prevNonSpaceCh == '=' )
-					inStatementIndentStack->back() = 0;
-			}
-
 			if (isCStyle())
 			{
 				if (findKeyword(line, i, AS_ASM)
