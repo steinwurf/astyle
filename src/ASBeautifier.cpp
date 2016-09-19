@@ -3531,6 +3531,25 @@ void ASBeautifier::parseCurrentLine(const string& line)
                 if (isCStyle() && foundNonAssignmentOp == &AS_ARROW)
                 {
                     potentialTemplateDisambiguator = true;
+
+                    // Add indent for end-of-line "->"
+                    if (parenDepth == 0 && !isInStatement && !isInTemplate)
+                    {
+                        // is -> at end of line?
+			            size_t nextChar = line.find_first_not_of(" \t", i + 1);
+			            if (nextChar != string::npos)
+			            {
+				            if (line.compare(nextChar, 2, "//") == 0
+				                    || line.compare(nextChar, 2, "/*") == 0)
+					            nextChar = string::npos;
+			            }
+			            // register indent
+			            if (nextChar == string::npos)
+			            {
+					        registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
+					        isInStatement = true;
+			            }
+                    }
                 }
 
 				// For C++ input/output, operator<< and >> should be
