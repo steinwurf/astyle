@@ -2127,21 +2127,6 @@ void ASBeautifier::computePreliminaryIndentation()
 		}
 	}
 
-    if (isInTemplate || isInTemplateInstantiation)
-    {
-        // Use symmetrical layout for closing brace in template argument list:
-        //
-        // template
-        // <
-        //     class Argument
-        // >
-        if (lineFirstChar == '>' && !lineStartsInComment)
-        {
-             if (!inStatementIndentStack->empty())
-                 spaceIndentCount -= inStatementIndentStack->back();
-        }
-    }
-
 	if (isInClassInitializer || isInEnumTypeID)
 	{
 		indentCount += classInitializerIndents;
@@ -2611,6 +2596,20 @@ void ASBeautifier::parseCurrentLine(const string& line)
                 else if (ch == '>')
                 {
                     popLastInStatementIndent();
+                    // Immediately reduce spaceIndentCount if the line starts
+                    // with '>' to get a symmetrical layout:
+                    //
+                    // template
+                    // <
+                    //     class Argument
+                    // >
+                    if (lineFirstChar == '>' && !lineStartsInComment)
+                    {
+                         if (!inStatementIndentStack->empty())
+                             spaceIndentCount = inStatementIndentStack->back();
+                         else
+                             spaceIndentCount = 0;
+                    }
                     if (--templateDepth <= 0)
                     {
                         ch = ';';
@@ -2635,7 +2634,9 @@ void ASBeautifier::parseCurrentLine(const string& line)
                     if (isInTemplateInstantiation)
                     {
                         inStatementIndentStackSizeStack->push_back(inStatementIndentStack->size());
-                        registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, true);
+                        // Always add one indent, i.e. do not try to align
+                        registerInStatementIndent(line, line.length() - 1,
+                                                  spaceIndentCount, tabIncrementIn, 0, true);
                         isInStatement = true;
                     }
                 }
@@ -2645,6 +2646,20 @@ void ASBeautifier::parseCurrentLine(const string& line)
                             && !inStatementIndentStackSizeStack->empty())
                     {
                         popLastInStatementIndent();
+                        // Immediately reduce spaceIndentCount if the line starts
+                        // with '>' to get a symmetrical layout:
+                        //
+                        // template_function<
+                        //     Argument1,
+                        //     Argument2
+                        // >
+                        if (lineFirstChar == '>' && !lineStartsInComment)
+                        {
+                             if (!inStatementIndentStack->empty())
+                                 spaceIndentCount = inStatementIndentStack->back();
+                             else
+                                 spaceIndentCount = 0;
+                        }
                     }
                     if (--templateDepth <= 0)
                     {
