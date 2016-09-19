@@ -633,7 +633,7 @@ void ASConsole::printChangedLine(const string& fileName, const string& line, int
             printSeparatingLine();
             printf("Changes in %s\n", fileName.c_str());
         }
-        printf("%s(%5d): %s\n", fileName.c_str(), lineNumber, line.c_str());
+        printf("%s(%d): %s\n", fileName.c_str(), lineNumber, line.c_str());
     }
 }
 
