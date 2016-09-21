@@ -1318,10 +1318,6 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
 	        && inStatementIndent < inStatementIndentStack->back())
 		inStatementIndent = inStatementIndentStack->back();
 
-	// the block opener is not indented for a NonInStatementArray
-	if (isNonInStatementArray && !isInEnum && !bracketBlockStateStack->empty() && bracketBlockStateStack->back())
-		inStatementIndent = 0;
-
 	inStatementIndentStack->push_back(inStatementIndent);
 }
 
@@ -3405,7 +3401,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			{
 				// must bypass the header before registering the in statement
 				i += foundIndentableHeader->length() - 1;
-				if (!isInOperator && !isInTemplate && !isNonInStatementArray)
+				if (!isInOperator && !isInTemplate)
 				{
 					registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
 					isInStatement = true;
@@ -3595,7 +3591,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 				if (foundAssignmentOp->length() > 1)
 					i += foundAssignmentOp->length() - 1;
 
-				if (!isInOperator && !isInTemplate && (!isNonInStatementArray || isInEnum))
+				if (!isInOperator && !isInTemplate)
 				{
 					// don't indent an assignment if 'let'
                     if (isInLet)
