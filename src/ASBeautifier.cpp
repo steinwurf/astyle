@@ -1261,15 +1261,17 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
     // text is comment-only
     int nextProgramChar = getNextProgramCharDistance(line, i);
 
-	// if indent is around the last char in the line, indent instead one indent from the previous indent
-	if (nextProgramChar == remainingCharNum)
+    bool isLastProgramChar = (nextProgramChar == remainingCharNum);
+
+	// if indent is around the last char in the line or the line ends with '(',
+	// then add only one indent from the previous indent
+	if (isLastProgramChar || getLastProgramChar(line, i) == '(')
 	{
 		int previousIndent = spaceTabCount_;
 		if (!inStatementIndentStack->empty())
 			previousIndent = inStatementIndentStack->back();
 		int currIndent = /*2*/ indentLength + previousIndent;
-		if (currIndent > maxInStatementIndent
-		        && line[i] != '{')
+		if (currIndent > maxInStatementIndent && line[i] != '{')
 			currIndent = indentLength * 2 + spaceTabCount_;
 		inStatementIndentStack->push_back(currIndent);
 		if (updateParenStack)
@@ -1356,6 +1358,55 @@ pair<int, int> ASBeautifier::computePreprocessorIndent()
 	            || headerStack->back() == &AS_WHILE))
 		--entry.first;
 	return entry;
+}
+
+/**
+ * Get the last non-whitespace, non-comment character in the line.
+ * if no such character exists, return ' '
+ *
+ * @param i       the search starts from this index (must be a program char).
+ */
+char ASBeautifier::getLastProgramChar(const string& line, int i) const
+{
+	bool inComment = false;
+	int  remainingCharNum = line.length() - i;
+	char lastProgramChar = ' ';
+    int  charDistance;
+	char ch;
+
+	for (charDistance = 0; charDistance < remainingCharNum; charDistance++)
+	{
+		ch = line[i + charDistance];
+		if (inComment)
+		{
+			if (line.compare(i + charDistance, 2, "*/") == 0)
+			{
+				charDistance++;
+				inComment = false;
+			}
+			continue;
+		}
+		else if (ch == '/')
+		{
+			if (line.compare(i + charDistance, 2, "//") == 0)
+				return lastProgramChar;
+			if (line.compare(i + charDistance, 2, "/*") == 0)
+			{
+				charDistance++;
+				inComment = true;
+			}
+            else
+            {
+                lastProgramChar = ch;
+            }
+		}
+		else if (!isWhiteSpace(ch))
+        {
+			lastProgramChar = ch;
+        }
+	}
+
+	return lastProgramChar;
 }
 
 /**
@@ -3399,7 +3450,10 @@ void ASBeautifier::parseCurrentLine(const string& line)
 				i += foundIndentableHeader->length() - 1;
 				if (!isInOperator && !isInTemplate)
 				{
-					registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
+                    // Do not align on the right side of the return statement
+                    // if this is a continuation line that ends with '('
+                    if (getLastProgramChar(line, i) != '(')
+					    registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
 					isInStatement = true;
 				}
 				continue;
@@ -3598,7 +3652,10 @@ void ASBeautifier::parseCurrentLine(const string& line)
 					{
 						if (i == 0 && spaceIndentCount == 0)
 							spaceIndentCount += indentLength;
-						registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
+                        // Do not align on the right side of the '=' sign
+                        // if this is a continuation line that ends with '('
+						if (getLastProgramChar(line, i) != '(')
+                            registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
 						isInStatement = true;
 					}
 				}

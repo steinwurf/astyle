@@ -339,6 +339,7 @@ protected:
 	                         const vector<const string*>* possibleHeaders) const;
 	const string* findOperator(const string& line, int i,
 	                           const vector<const string*>* possibleOperators) const;
+    char getLastProgramChar(const string& line, int i) const;
 	int  getNextProgramCharDistance(const string& line, int i) const;
 	int  indexOf(vector<const string*>& container, const string* element) const;
 	void setBlockIndent(bool state);
