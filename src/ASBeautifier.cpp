@@ -1263,10 +1263,13 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
     bool isLastProgramChar = (nextProgramChar == remainingCharNum);
 
     char lastProgramChar = getLastProgramChar(line, i);
+    bool continuationLine = (lastProgramChar == '(');
+    if (!continuationLine && isInTemplateInstantiation)
+        continuationLine = (lastProgramChar == '<');
 
 	// Special rules if this is the last char in the line, or if the line
     // ends with '('
-	if (isLastProgramChar || lastProgramChar == '(')
+	if (isLastProgramChar || continuationLine)
 	{
 		int previousIndent = spaceTabCount_;
 		if (!inStatementIndentStack->empty())
@@ -1275,7 +1278,7 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
         int currIndent = indentLength + previousIndent;
         // If the line ends with '(', then the next line will be a continuation
         // of the current line, so we do not increase the previous indent
-        if (lastProgramChar == '(' && previousIndent > spaceIndentCount)
+        if (continuationLine && previousIndent > spaceIndentCount)
         {
             currIndent = previousIndent;
         }
