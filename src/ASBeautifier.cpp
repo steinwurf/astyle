@@ -2804,6 +2804,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			                      || prevNonSpaceCh == '}'
 			                      || prevNonSpaceCh == ')'
 			                      || prevNonSpaceCh == ';'
+                                  || prevNonSpaceCh == '>'
 			                      || peekNextChar(line, i) == '{'
 			                      || foundPreCommandHeader
 			                      || foundPreCommandMacro
