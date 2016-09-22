@@ -1260,17 +1260,25 @@ void ASBeautifier::registerInStatementIndent(const string& line, int i, int spac
 	// Get the next program char distance to determine if the remaining
     // text is comment-only
     int nextProgramChar = getNextProgramCharDistance(line, i);
-
     bool isLastProgramChar = (nextProgramChar == remainingCharNum);
 
-	// if indent is around the last char in the line or the line ends with '(',
-	// then add only one indent from the previous indent
-	if (isLastProgramChar || getLastProgramChar(line, i) == '(')
+    char lastProgramChar = getLastProgramChar(line, i);
+
+	// Special rules if this is the last char in the line, or if the line
+    // ends with '('
+	if (isLastProgramChar || lastProgramChar == '(')
 	{
 		int previousIndent = spaceTabCount_;
 		if (!inStatementIndentStack->empty())
 			previousIndent = inStatementIndentStack->back();
-		int currIndent = /*2*/ indentLength + previousIndent;
+        // By default, add one indent from the previous indent
+        int currIndent = indentLength + previousIndent;
+        // If the line ends with '(', then the next line will be a continuation
+        // of the current line, so we do not increase the previous indent
+        if (lastProgramChar == '(' && previousIndent > spaceIndentCount)
+        {
+            currIndent = previousIndent;
+        }
 		if (currIndent > maxInStatementIndent && line[i] != '{')
 			currIndent = indentLength * 2 + spaceTabCount_;
 		inStatementIndentStack->push_back(currIndent);
@@ -3450,10 +3458,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 				i += foundIndentableHeader->length() - 1;
 				if (!isInOperator && !isInTemplate)
 				{
-                    // Do not align on the right side of the return statement
-                    // if this is a continuation line that ends with '('
-                    if (getLastProgramChar(line, i) != '(')
-					    registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
+					registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
 					isInStatement = true;
 				}
 				continue;
@@ -3652,10 +3657,8 @@ void ASBeautifier::parseCurrentLine(const string& line)
 					{
 						if (i == 0 && spaceIndentCount == 0)
 							spaceIndentCount += indentLength;
-                        // Do not align on the right side of the '=' sign
-                        // if this is a continuation line that ends with '('
-						if (getLastProgramChar(line, i) != '(')
-                            registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
+
+                        registerInStatementIndent(line, i, spaceIndentCount, tabIncrementIn, 0, false);
 						isInStatement = true;
 					}
 				}
