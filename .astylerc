@@ -6,7 +6,6 @@
 --ignore-exclude-errors-x
 
 --style=allman
---indent-namespaces
 --pad-header
 --unpad-paren
 --convert-tabs
@@ -14,12 +13,11 @@
 --indent-preproc-block
 --align-pointer=type
 --align-reference=type
---attach-extern-c
 
 --keep-one-line-blocks
 --keep-one-line-statements
 --min-conditional-indent=0
---max-instatement-indent=50
+--max-instatement-indent=60
 
 --max-code-length=80
 --break-after-logical
