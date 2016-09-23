@@ -2719,6 +2719,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
                     {
                         isInTemplateInstantiation = false;
                         templateDepth = 0;
+                        isInStatement = false;
                     }
                 }
             }
