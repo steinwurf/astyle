@@ -2869,7 +2869,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			if (isInClassInitializer || isInEnumTypeID)
 			{
 				// decrease tab count if bracket is broken
-				if (lineBeginsWithOpenBracket)
+				if (lineBeginsWithOpenBracket && parenDepth == 0)
 				{
 					indentCount -= classInitializerIndents;
 					// decrease one more if an empty class
@@ -2908,32 +2908,31 @@ void ASBeautifier::parseCurrentLine(const string& line)
 
 			if (!inStatementIndentStack->empty())
 			{
-				// completely purge the inStatementIndentStack
-				while (!inStatementIndentStack->empty())
-					popLastInStatementIndent();
-				if (isInClassInitializer || isInClassHeaderTab)
-				{
-					if (lineBeginsWithOpenBracket || lineBeginsWithComma)
-						spaceIndentCount = 0;
-				}
-                // Do not zero the spaceIndentCount for the current line
-                // if we are within a statement. This is useful for lambda
-                // expressions in multiline statements:
-                //
-                //     std::generate(data.begin(), data.end(),
-                //                   [&]() { return randval(engine); });
-				else if (!isInStatement || lineBeginsWithOpenBracket)
+                bool initializerBlock =
+                    (isInStatement && (prevNonSpaceCh == ',' || prevNonSpaceCh == '('));
+
+                // Purge the inStatementIndentStack if the line begins with '{'
+                // and this is not a possible initializer block in a statement,
+                // for example: function(arg, { 1, 2, 3, 4 });
+                if (lineBeginsWithOpenBracket && !initializerBlock)
+                {
+				    while (!inStatementIndentStack->empty())
+					    popLastInStatementIndent();
 					spaceIndentCount = 0;
+                }
 			}
 
 			blockTabCount += (isInStatement ? 1 : 0);
 			if (g_preprocessorCppExternCBracket == 3)
 				++g_preprocessorCppExternCBracket;
+            if (parenDepth == 0)
+            {
+                isInClassInitializer = false;
+			    isInEnumTypeID = false;
+            }
 			parenDepth = 0;
 			isInClassHeader = false;
 			isInClassHeaderTab = false;
-			isInClassInitializer = false;
-			isInEnumTypeID = false;
 			isInStatement = false;
 			isInQuestion = false;
 			isInLet = false;
@@ -3318,9 +3317,6 @@ void ASBeautifier::parseCurrentLine(const string& line)
 
 				++lineClosingBlocksNum;
 
-				if (!inStatementIndentStackSizeStack->empty())
-					popLastInStatementIndent();
-
 				if (!blockParenDepthStack->empty())
 				{
 					parenDepth = blockParenDepthStack->back();
@@ -3333,7 +3329,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 				}
 
 				closingBracketReached = true;
-				if (i == 0)
+				if (i == 0 && !isInStatement)
 					spaceIndentCount = 0;
 				isInAsmBlock = false;
 				isInAsm = isInAsmOneLine = isInQuote = false;	// close these just in case
