@@ -274,6 +274,7 @@ public:     // variables
 		// command line options
 		isRecursive = false;
 		isDryRun = false;
+        printChanges = false;
 		noBackup = false;
 		preserveDate = false;
 		isVerbose = false;
