@@ -88,3 +88,17 @@ The ``astyle.check_code`` task will not make any changes in the C/C++ source
 files, it will only print the required changes in the selected project::
 
     fab astyle.check_code:my-project
+
+Integrating astyle with the Atom text editor
+--------------------------------------------
+
+After building astyle, please install the following packages in Atom::
+
+    apm install formatter
+    apm install formatter-astyle
+
+In the settings for ``formatter-astyle``, point to the astyle binary in
+``build/cxx_default`` and to the ``.astylerc`` file in the root of this
+repository.
+
+The keyboard shortcuts can be found in the settings for the formatter package.
