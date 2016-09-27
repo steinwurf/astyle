@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import os
-import filecmp
 import difflib
 import sys
 import subprocess
@@ -80,7 +79,9 @@ def run_astyle_tests(bld):
     if os.path.isdir('test'):
         test_folder = os.path.join(os.getcwd(), 'test')
         correct_style = os.path.join(test_folder, 'correct_style.cpp')
-        correct_lines = open(correct_style, 'U').readlines()
+        # Read the input file using universal newlines (so the line endings
+        # are seen as '\n', even if git checks out the code with '\r\n')
+        correct_lines = open(correct_style, 'rU').readlines()
 
         temp_folder = os.path.join(test_folder, 'temp')
         # Make sure that the temp folder is deleted before copytree
@@ -98,14 +99,14 @@ def run_astyle_tests(bld):
                 run_command([astyle, options, test_file])
 
                 # Compare the formatted file with the correct style
-                if not filecmp.cmp(correct_style, test_file):
+                test_lines = open(test_file, 'r').readlines()
+                diff = difflib.unified_diff(correct_lines, test_lines)
+                diff_lines = ''.join(diff)
+
+                if len(diff_lines) > 0:
                     incorrect_files += 1
                     print('\nIncorrect formatting: {}'.format(test_file))
-
-                    test_lines = open(test_file, 'U').readlines()
-
-                    diff = difflib.unified_diff(correct_lines, test_lines)
-                    print(''.join(diff))
+                    print(diff_lines)
 
         # Clean up the temp directory
         shutil.rmtree(temp_folder)
