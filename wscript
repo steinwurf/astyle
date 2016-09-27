@@ -80,7 +80,7 @@ def run_astyle_tests(bld):
     if os.path.isdir('test'):
         test_folder = os.path.join(os.getcwd(), 'test')
         correct_style = os.path.join(test_folder, 'correct_style.cpp')
-        correct_lines = open(correct_style, 'r').readlines()
+        correct_lines = open(correct_style, 'U').readlines()
 
         temp_folder = os.path.join(test_folder, 'temp')
         # Make sure that the temp folder is deleted before copytree
@@ -102,7 +102,7 @@ def run_astyle_tests(bld):
                     incorrect_files += 1
                     print('\nIncorrect formatting: {}'.format(test_file))
 
-                    test_lines = open(test_file, 'r').readlines()
+                    test_lines = open(test_file, 'U').readlines()
 
                     diff = difflib.unified_diff(correct_lines, test_lines)
                     print(''.join(diff))
