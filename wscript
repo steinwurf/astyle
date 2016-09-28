@@ -94,7 +94,7 @@ def run_astyle_tests(bld):
         # Run astyle to format each test file
         for file in sorted(os.listdir(temp_folder)):
             test_file = os.path.join(temp_folder, file)
-            if (os.path.isfile(test_file)):
+            if os.path.isfile(test_file):
                 print('Test file: '+test_file)
                 run_command([astyle, options, test_file])
 
