@@ -2909,12 +2909,13 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			if (!inStatementIndentStack->empty())
 			{
                 bool initializerBlock =
-                    (isInStatement && (prevNonSpaceCh == ',' || prevNonSpaceCh == '('));
+                    (prevNonSpaceCh == ',' || prevNonSpaceCh == '('
+                            || prevNonSpaceCh == '{');
 
                 // Purge the inStatementIndentStack if the line begins with '{'
                 // and this is not a possible initializer block in a statement,
                 // for example: function(arg, { 1, 2, 3, 4 });
-                if (lineBeginsWithOpenBracket && !initializerBlock)
+                if (i == 0 && !initializerBlock)
                 {
 				    while (!inStatementIndentStack->empty())
 					    popLastInStatementIndent();
