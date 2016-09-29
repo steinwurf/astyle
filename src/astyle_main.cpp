@@ -3847,10 +3847,11 @@ int main(int argc, char** argv)
 	g_console->processFiles();
 
     int return_code = EXIT_SUCCESS;
-    if (g_console->getPrintChanges() && g_console->getFilesFormatted() > 0)
+    if (g_console->getIsDryRun() && g_console->getPrintChanges()
+            && g_console->getFilesFormatted() > 0)
     {
         // Use the number of formatted files as a return code with the
-        // --print-changes option
+        // --print-changes + --dry-run option
         return_code = g_console->getFilesFormatted();
     }
 
