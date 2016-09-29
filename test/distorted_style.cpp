@@ -721,12 +721,16 @@ public:
 
     // Member variables
 
+    stub::function<bool( uint32_t )> is_symbol_partially_decoded;
+
     std::function<void(const std::vector<uint8_t>&)> m_write_symbol_callback;
+
+    stub::function<const uint8_t*(uint32_t )> coefficient_vector_data;
 
     stub::function<uint32_t, const storage::const_storage> copy_into_symbol;
 
     stub::function<
-        void(uint8_t**, const uint8_t**, uint8_t**, uint32_t, uint32_t)
+        void(uint8_t** , const uint8_t**, uint8_t**, uint32_t, uint32_t)
         > m_vector_dot_product;
 
     stub::function<
