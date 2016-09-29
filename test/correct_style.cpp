@@ -494,14 +494,14 @@ public:
                              fifi::binary, fifi::binary4, fifi::binary8>;
 
         uint8_t constant_matrix[3][3] =
-        {
-            {1, 2, 3},
-            {5, 6, 7},
-            {53, 71, 42}
-        };
+            {
+                {1, 2, 3},
+                {5, 6, 7},
+                {53, 71, 42}
+            };
 
         expected_coefficients =
-        { 95, 203, 243, 46, 187, 199, 153, 152, 39, 114 };
+            { 95, 203, 243, 46, 187, 199, 153, 152, 39, 114 };
 
         EXXXXXXXXECT_EQ(1u, stack.m_send.calls()) <<
             "Only one packet be send as " <<
@@ -785,9 +785,9 @@ int main(int argc, const char* argv[])
     std::vector<int> v = {0, 1, 2, 3, 4, 5};
 
     std::vector<uint8_t> data =
-    {
-        0x67, 0x42, 0x00, 0x0A, 0xF8, 0x41, 0xA2
-    };
+        {
+            0x67, 0x42, 0x00, 0x0A, 0xF8, 0x41, 0xA2
+        };
 
     // insert code here...
     std::cout << "This is a very loooooooooong line for this Hello World! "

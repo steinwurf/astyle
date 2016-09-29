@@ -2910,7 +2910,7 @@ void ASBeautifier::parseCurrentLine(const string& line)
 			{
                 bool initializerBlock =
                     (prevNonSpaceCh == ',' || prevNonSpaceCh == '('
-                            || prevNonSpaceCh == '{');
+                            || prevNonSpaceCh == '{' || prevNonSpaceCh == '=');
 
                 // Purge the inStatementIndentStack if the line begins with '{'
                 // and this is not a possible initializer block in a statement,
