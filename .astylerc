@@ -2,7 +2,8 @@
 --suffix=none
 
 --exclude="build"
---exclude="bundle_dependencies"
+--exclude="resolve_symlinks"
+--exclude="resolved_dependencies"
 --ignore-exclude-errors-x
 
 --style=allman
