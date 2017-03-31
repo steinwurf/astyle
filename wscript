@@ -6,9 +6,9 @@ import difflib
 import sys
 import subprocess
 import shutil
+
 from waflib.TaskGen import feature, after_method
 from waflib import Errors
-import waflib.extras.wurf_options
 
 APPNAME = 'astyle'
 VERSION = '0.1.0'
