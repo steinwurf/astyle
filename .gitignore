@@ -14,16 +14,18 @@
 # Python
 *.pyc
 
-# astyle-specific files and folders
-/AStyle
+# Compiled Doxygen documentation
+/doxygen/html
 
-# For projects that use Waf for building: http://code.google.com/p/waf/
+# Waf files
 waf-*
+waf3-*
 .waf-*
 .waf3-*
 .lock-*
 build
-bundle_dependencies
+resolve_symlinks
+resolved_dependencies
 
 # Gnu Global tag files
 GPATH
@@ -45,7 +47,6 @@ local.properties
 .settings/
 
 # Visual Studio ignore
-/bin
 *.bat
 *.sln
 *.suo
@@ -54,6 +55,9 @@ local.properties
 *.sdf
 *.opensdf
 *.log
+*.vcxproj*
 VSProjects
 
-
+# astyle-specific files and folders
+/AStyle
+/bin
