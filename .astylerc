@@ -2,6 +2,7 @@
 --suffix=none
 
 --exclude="build"
+--exclude="build_current"
 --exclude="resolve_symlinks"
 --exclude="resolved_dependencies"
 --ignore-exclude-errors-x
