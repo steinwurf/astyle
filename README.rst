@@ -2,6 +2,9 @@
 astyle
 ======
 
+.. image:: https://travis-ci.org/steinwurf/astyle.svg?branch=master
+    :target: https://travis-ci.org/steinwurf/astyle
+
 This is a modified version of astyle: http://astyle.sourceforge.net
 
 Our intention is to patch astyle to follow the Steinwurf coding style
